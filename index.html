@@ -101,8 +101,6 @@
             color: #777;
         }
 
-        /* النافذة */
-
         .modal {
             display: none;
             position: fixed;
@@ -159,8 +157,6 @@
             font-size: 12px;
         }
 
-        /* الأزرار */
-
         .buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -188,8 +184,6 @@
             font-weight: bold;
             border: 0 !important;
         }
-
-        /* معاينة اللعبة */
 
         #gamePreview {
             display: none;
@@ -298,8 +292,6 @@
             margin-top: 10px;
         }
 
-        /* الكود */
-
         .code-title {
             display: flex;
             justify-content: space-between;
@@ -325,9 +317,19 @@
             color: #ddd;
             font-size: 12px;
             line-height: 1.6;
+            min-height: 180px;
+        }
+
+        .loading {
+            color: #888;
+        }
+
+        .error {
+            color: #ff6666;
         }
 
         @media (max-width: 500px) {
+
             header h1 {
                 font-size: 26px;
             }
@@ -345,6 +347,10 @@
             .modal-box {
                 padding: 15px;
             }
+
+            .buttons {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -355,8 +361,12 @@
 
     <header>
         <h1>🎮 LÖVE 2D Hub</h1>
-        <p>مكتبة ألعاب ومشاريع LÖVE 2D الخاصة بنا</p>
+
+        <p>
+            مكتبة ألعاب ومشاريع LÖVE 2D الخاصة بنا
+        </p>
     </header>
+
 
     <div class="game-card" id="crazyElevatorCard">
 
@@ -365,7 +375,10 @@
         </div>
 
         <div class="game-info">
-            <h2>المصعد المجنون</h2>
+
+            <h2>
+                المصعد المجنون
+            </h2>
 
             <p>
                 لعبة رعب 2D مصنوعة باستخدام LÖVE 2D
@@ -378,6 +391,7 @@
             <span class="tag">
                 LÖVE 2D
             </span>
+
         </div>
 
         <div class="arrow">
@@ -388,8 +402,6 @@
 
 </div>
 
-
-<!-- نافذة اللعبة -->
 
 <div class="modal" id="gameModal">
 
@@ -437,8 +449,6 @@
         </div>
 
 
-        <!-- معاينة اللعبة -->
-
         <div id="gamePreview">
 
             <div class="elevator" id="elevator">
@@ -480,8 +490,6 @@
         </div>
 
 
-        <!-- الكود -->
-
         <div class="code-title">
 
             <strong>
@@ -489,37 +497,13 @@
             </strong>
 
             <span id="copyStatus">
-                LÖVE 2D
+                جاري تحميل الكود...
             </span>
 
         </div>
 
 
-        <pre id="code"><code>function love.load()
-
-    floor = 1
-    doorOpen = false
-
-end
-
-
-function love.update(dt)
-
-    -- Crazy Elevator
-    -- الكود الحقيقي للعبة راح يكون هنا
-
-end
-
-
-function love.draw()
-
-    love.graphics.print(
-        "Crazy Elevator",
-        20,
-        20
-    )
-
-end</code></pre>
+        <pre id="code"><code class="loading">جاري تحميل main.lua من مستودع L-VE-2D...</code></pre>
 
     </div>
 
@@ -527,6 +511,10 @@ end</code></pre>
 
 
 <script>
+
+const GAME_CODE_URL =
+    "https://raw.githubusercontent.com/nonopalestinepalestine-lgtm/L-VE-2D/main/games/crazy-elevator/main.lua";
+
 
 const gameCard =
     document.getElementById("crazyElevatorCard");
@@ -571,11 +559,61 @@ const copyStatus =
     document.getElementById("copyStatus");
 
 
+let gameCode = "";
+
+
+/* تحميل الكود الحقيقي */
+
+async function loadGameCode() {
+
+    try {
+
+        const response =
+            await fetch(GAME_CODE_URL);
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " + response.status
+            );
+
+        }
+
+        gameCode =
+            await response.text();
+
+        code.textContent =
+            gameCode;
+
+        copyStatus.textContent =
+            "✅ الكود الحقيقي";
+
+    } catch (error) {
+
+        code.textContent =
+            "تعذر تحميل main.lua.\n\n" +
+            "تأكد أن الملف موجود في:\n" +
+            "games/crazy-elevator/main.lua";
+
+        code.classList.remove("loading");
+
+        code.classList.add("error");
+
+        copyStatus.textContent =
+            "⚠️ فشل تحميل الكود";
+
+    }
+
+}
+
+
 /* فتح اللعبة */
 
 gameCard.addEventListener("click", () => {
 
     modal.classList.add("active");
+
+    loadGameCode();
 
 });
 
@@ -589,7 +627,7 @@ closeButton.addEventListener("click", () => {
 });
 
 
-/* إغلاق عند الضغط خارج النافذة */
+/* الضغط خارج النافذة */
 
 modal.addEventListener("click", (event) => {
 
@@ -606,10 +644,11 @@ modal.addEventListener("click", (event) => {
 
 playButton.addEventListener("click", () => {
 
-    gamePreview.style.display = "block";
+    gamePreview.style.display =
+        "block";
 
     gameStatus.textContent =
-        "🎮 اللعبة تعمل داخل الموقع — Web Preview";
+        "🎮 معاينة Web — تشغيل تجريبي";
 
     elevator.classList.remove("open");
 
@@ -640,14 +679,24 @@ closeDoor.addEventListener("click", () => {
 });
 
 
-/* نسخ الكود */
+/* نسخ الكود الحقيقي */
 
 copyButton.addEventListener("click", async () => {
+
+    if (!gameCode) {
+
+        copyStatus.textContent =
+            "⏳ الكود بعده يتحمل";
+
+        return;
+
+    }
+
 
     try {
 
         await navigator.clipboard.writeText(
-            code.innerText
+            gameCode
         );
 
         copyStatus.textContent =
@@ -656,14 +705,14 @@ copyButton.addEventListener("click", async () => {
         setTimeout(() => {
 
             copyStatus.textContent =
-                "LÖVE 2D";
+                "✅ الكود الحقيقي";
 
         }, 1800);
 
     } catch {
 
         copyStatus.textContent =
-            "⚠️ انسخ الكود يدوياً";
+            "⚠️ تعذر النسخ";
 
     }
 
@@ -676,7 +725,8 @@ shareButton.addEventListener("click", async () => {
 
     const shareData = {
 
-        title: "المصعد المجنون",
+        title:
+            "المصعد المجنون",
 
         text:
             "لعبة المصعد المجنون — LÖVE 2D",
@@ -691,7 +741,9 @@ shareButton.addEventListener("click", async () => {
 
         if (navigator.share) {
 
-            await navigator.share(shareData);
+            await navigator.share(
+                shareData
+            );
 
         } else {
 
@@ -713,28 +765,51 @@ shareButton.addEventListener("click", async () => {
 });
 
 
-/* تحميل main.lua */
+/* تحميل main.lua الحقيقي */
 
 downloadButton.addEventListener("click", () => {
 
+    if (!gameCode) {
+
+        copyStatus.textContent =
+            "⏳ انتظر تحميل الكود";
+
+        return;
+
+    }
+
+
     const blob =
         new Blob(
-            [code.innerText],
-            { type: "text/plain" }
+            [gameCode],
+            {
+                type: "text/plain"
+            }
         );
+
 
     const url =
         URL.createObjectURL(blob);
 
+
     const link =
         document.createElement("a");
 
-    link.href = url;
+
+    link.href =
+        url;
+
 
     link.download =
         "main.lua";
 
+
+    document.body.appendChild(link);
+
     link.click();
+
+    document.body.removeChild(link);
+
 
     URL.revokeObjectURL(url);
 
